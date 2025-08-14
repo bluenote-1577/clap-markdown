@@ -139,3 +139,37 @@ Test app without grouped options
         expected_output
     );
 }
+
+#[test]
+fn test_empty_help_heading() {
+    // Test edge case where help_heading is an empty string
+    let app = Command::new("empty-heading-app")
+        .about("Test app with empty help heading")
+        .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .help("Enable verbose output")
+                .help_heading("")  // Empty string
+                .action(clap::ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("debug")
+                .short('d')
+                .long("debug")
+                .help("Enable debug output")
+                .help_heading("Debug Options")
+                .action(clap::ArgAction::SetTrue)
+        );
+
+    let output = help_markdown_command_custom(
+        &app,
+        &MarkdownOptions::new().show_footer(false)
+    );
+
+    // Should have both empty heading section and Debug Options section
+    assert!(output.contains("###### **:**"));  // Empty heading
+    assert!(output.contains("###### **Debug Options:**"));
+    assert!(output.contains("Enable verbose output"));
+    assert!(output.contains("Enable debug output"));
+}
