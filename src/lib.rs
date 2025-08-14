@@ -432,7 +432,7 @@ fn build_command_markdown(
 
         // Write each group with its heading
         for (heading, args) in grouped_args {
-            writeln!(buffer, "###### **{}:**\n", heading)?;
+            writeln!(buffer, "###### **{heading}:**\n")?;
 
             for arg in args {
                 write_arg_markdown(buffer, arg)?;
