@@ -9,7 +9,7 @@ fn main() {
                 .long("verbose")
                 .help("Enable verbose output")
                 .help_heading("Logging Options")
-                .action(clap::ArgAction::SetTrue)
+                .action(clap::ArgAction::SetTrue),
         )
         .arg(
             Arg::new("quiet")
@@ -17,7 +17,7 @@ fn main() {
                 .long("quiet")
                 .help("Suppress output")
                 .help_heading("Logging Options")
-                .action(clap::ArgAction::SetTrue)
+                .action(clap::ArgAction::SetTrue),
         )
         .arg(
             Arg::new("input")
@@ -25,7 +25,7 @@ fn main() {
                 .long("input")
                 .help("Input file")
                 .help_heading("File Operations")
-                .value_name("FILE")
+                .value_name("FILE"),
         )
         .arg(
             Arg::new("output")
@@ -33,7 +33,7 @@ fn main() {
                 .long("output")
                 .help("Output file")
                 .help_heading("File Operations")
-                .value_name("FILE")
+                .value_name("FILE"),
         )
         .arg(
             Arg::new("threads")
@@ -41,7 +41,7 @@ fn main() {
                 .long("threads")
                 .help("Number of threads")
                 .help_heading("Performance Options")
-                .value_name("NUM")
+                .value_name("NUM"),
         )
         .arg(
             Arg::new("memory")
@@ -49,15 +49,14 @@ fn main() {
                 .long("memory")
                 .help("Memory limit")
                 .help_heading("Performance Options")
-                .value_name("SIZE")
+                .value_name("SIZE"),
         )
         .arg(
             Arg::new("config")
                 .short('c')
                 .long("config")
                 .help("Configuration file")
-                .value_name("FILE")
-                // No help_heading - goes to default "Options"
+                .value_name("FILE"), // No help_heading - goes to default "Options"
         );
 
     println!("{}", clap_markdown::help_markdown_command(&app));
