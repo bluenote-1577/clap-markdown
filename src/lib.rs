@@ -425,7 +425,7 @@ fn build_command_markdown(
 
     let non_pos: Vec<_> = command
         .get_arguments()
-        .filter(|arg| !arg.is_positional() && !arg.is_hide_set())
+        .filter(|arg| !arg.is_positional() && (!arg.is_hide_set() || options.show_hidden))
         .collect();
 
     if !non_pos.is_empty() {
@@ -565,7 +565,7 @@ fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg, options: &MarkdownOp
     let possible_values: Vec<PossibleValue> = arg
         .get_possible_values()
         .into_iter()
-        .filter(|pv| !pv.is_hide_set() && !options.show_hidden)
+        .filter(|pv| !pv.is_hide_set() || options.show_hidden)
         .collect();
 
     // Print possible values for options that take a value, but not for flags
