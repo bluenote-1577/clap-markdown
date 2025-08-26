@@ -410,7 +410,7 @@ fn build_command_markdown(
     //----------------------------------
 
     if command.get_positionals().next().is_some() {
-        writeln!(buffer, "###### **Arguments:**\n")?;
+        writeln!(buffer, "### **Arguments:**\n")?;
 
         for pos_arg in command.get_positionals() {
             write_arg_markdown(buffer, pos_arg, options)?;
@@ -445,7 +445,7 @@ fn build_command_markdown(
 
         // Write each group with its heading
         for (heading, index) in name_to_index{
-            writeln!(buffer, "###### **{heading}:**\n")?;
+            writeln!(buffer, "### **{heading}:**\n")?;
 
             for arg in grouped_args[index].iter() {
                 write_arg_markdown(buffer, arg, options)?;
