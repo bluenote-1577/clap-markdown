@@ -31,6 +31,7 @@ use utils::pluralize;
 #[non_exhaustive]
 pub struct MarkdownOptions {
     title: Option<String>,
+    show_hidden: bool,
     show_footer: bool,
     show_table_of_contents: bool,
     show_aliases: bool,
@@ -42,6 +43,7 @@ impl MarkdownOptions {
         return Self {
             title: None,
             show_footer: true,
+            show_hidden: true,
             show_table_of_contents: true,
             show_aliases: true,
         };
@@ -71,6 +73,12 @@ impl MarkdownOptions {
     /// Whether to show aliases for arguments and commands.
     pub fn show_aliases(mut self, show: bool) -> Self {
         self.show_aliases = show;
+
+        return self;
+    }
+
+    pub fn show_hidden(mut self, show: bool) -> Self {
+        self.show_hidden = show;
 
         return self;
     }
@@ -170,7 +178,7 @@ fn write_help_markdown(
     if options.show_table_of_contents {
         writeln!(buffer, "**Command Overview:**\n").unwrap();
 
-        build_table_of_contents_markdown(buffer, Vec::new(), command, 0)
+        build_table_of_contents_markdown(buffer, Vec::new(), command, 0, options)
             .unwrap();
 
         write!(buffer, "\n").unwrap();
@@ -202,10 +210,11 @@ fn build_table_of_contents_markdown(
     parent_command_path: Vec<String>,
     command: &clap::Command,
     depth: usize,
+    options: &MarkdownOptions,
 ) -> std::fmt::Result {
     // Don't document commands marked with `clap(hide = true)` (which includes
     // `print-all-help`).
-    if command.is_hide_set() {
+    if command.is_hide_set() && !options.show_hidden {
         return Ok(());
     }
 
@@ -235,6 +244,7 @@ fn build_table_of_contents_markdown(
             command_path.clone(),
             subcommand,
             depth + 1,
+            options
         )?;
     }
 
@@ -296,7 +306,7 @@ fn build_command_markdown(
 ) -> std::fmt::Result {
     // Don't document commands marked with `clap(hide = true)` (which includes
     // `print-all-help`).
-    if command.is_hide_set() {
+    if command.is_hide_set() && !options.show_hidden {
         return Ok(());
     }
 
@@ -378,7 +388,7 @@ fn build_command_markdown(
         writeln!(buffer, "###### **Subcommands:**\n")?;
 
         for subcommand in command.get_subcommands() {
-            if subcommand.is_hide_set() {
+            if subcommand.is_hide_set() && !options.show_hidden {
                 continue;
             }
 
@@ -403,7 +413,7 @@ fn build_command_markdown(
         writeln!(buffer, "###### **Arguments:**\n")?;
 
         for pos_arg in command.get_positionals() {
-            write_arg_markdown(buffer, pos_arg)?;
+            write_arg_markdown(buffer, pos_arg, options)?;
         }
 
         write!(buffer, "\n")?;
@@ -420,22 +430,25 @@ fn build_command_markdown(
 
     if !non_pos.is_empty() {
         // Group arguments by help heading
-        let mut grouped_args: BTreeMap<&str, Vec<&clap::Arg>> = BTreeMap::new();
+        let mut grouped_args: Vec<Vec<&clap::Arg>> = vec![];
+        let mut name_to_index: BTreeMap<&str, usize> = BTreeMap::new();
 
         for arg in non_pos {
             let heading = arg.get_help_heading().unwrap_or("Options");
-            grouped_args
-                .entry(heading)
-                .or_insert_with(Vec::new)
-                .push(arg);
+            if !name_to_index.contains_key(heading) {
+                grouped_args.push(vec![]);
+                name_to_index.insert(heading, grouped_args.len() - 1);
+            }
+            let index = name_to_index[heading];
+            grouped_args[index].push(arg);
         }
 
         // Write each group with its heading
-        for (heading, args) in grouped_args {
+        for (heading, index) in name_to_index{
             writeln!(buffer, "###### **{heading}:**\n")?;
 
-            for arg in args {
-                write_arg_markdown(buffer, arg)?;
+            for arg in grouped_args[index].iter() {
+                write_arg_markdown(buffer, arg, options)?;
             }
 
             write!(buffer, "\n")?;
@@ -463,7 +476,7 @@ fn build_command_markdown(
     Ok(())
 }
 
-fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg) -> fmt::Result {
+fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg, options: &MarkdownOptions) -> fmt::Result {
     // Markdown list item
     write!(buffer, "* ")?;
 
@@ -552,7 +565,7 @@ fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg) -> fmt::Result {
     let possible_values: Vec<PossibleValue> = arg
         .get_possible_values()
         .into_iter()
-        .filter(|pv| !pv.is_hide_set())
+        .filter(|pv| !pv.is_hide_set() && !options.show_hidden)
         .collect();
 
     // Print possible values for options that take a value, but not for flags
