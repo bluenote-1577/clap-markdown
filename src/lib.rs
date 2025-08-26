@@ -385,7 +385,7 @@ fn build_command_markdown(
     //----------------------------------
 
     if command.get_subcommands().next().is_some() {
-        writeln!(buffer, "###### **Subcommands:**\n")?;
+        writeln!(buffer, "### **Subcommands:**\n")?;
 
         for subcommand in command.get_subcommands() {
             if subcommand.is_hide_set() && !options.show_hidden {
@@ -551,10 +551,10 @@ fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg, options: &MarkdownOp
 
         if arg.get_default_values().len() > 1 {
             // Plural
-            writeln!(buffer, "\n  Default values: {default_values} \n")?;
+            writeln!(buffer, " [{default_values}] \n")?;
         } else {
             // Singular
-            writeln!(buffer, "\n  Default value: {default_values} \n")?;
+            writeln!(buffer, " [{default_values}] \n")?;
         }
     }
 
