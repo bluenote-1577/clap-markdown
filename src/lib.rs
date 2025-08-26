@@ -551,10 +551,10 @@ fn write_arg_markdown(buffer: &mut String, arg: &clap::Arg, options: &MarkdownOp
 
         if arg.get_default_values().len() > 1 {
             // Plural
-            writeln!(buffer, "\n  Default values: {default_values}")?;
+            writeln!(buffer, "\n  Default values: {default_values} \n")?;
         } else {
             // Singular
-            writeln!(buffer, "\n  Default value: {default_values}")?;
+            writeln!(buffer, "\n  Default value: {default_values} \n")?;
         }
     }
 
